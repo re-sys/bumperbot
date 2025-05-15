@@ -10,12 +10,12 @@ from tf_transformations import quaternion_matrix, concatenate_matrices, quaterni
 
 class PDMotionPlanner(Node):
     def __init__(self):
-        self.declare_parameter("pd_motion_planner")
-        self.declare_parameter("kp",2.0)
+        super().__init__("pd_motion_planner")
+        self.declare_parameter("kp",5.0)
         self.declare_parameter("kd",0.1)
         self.declare_parameter("step_size",0.2)
-        self.declare_parameter("max_linear_velocity",2.0)
-        self.declare_parameter("max_angular_velocity",1.0)
+        self.declare_parameter("max_linear_velocity",5.0)
+        self.declare_parameter("max_angular_velocity",3.0)
 
         self.kp = self.get_parameter("kp").value
         self.kd = self.get_parameter("kd").value
@@ -39,9 +39,13 @@ class PDMotionPlanner(Node):
 
     def path_callback(self,path : Path):
         self.global_plan = path
+        self.get_logger().info("get plan!!!!!!!!!!!")
 
     def control_loop(self):
-        if not self.global_plan or self.global_plan.poses:
+        if not self.global_plan or not self.global_plan.poses:
+            self.get_logger().info(f"no global_plan receive"
+                                   f"hello world"
+                                   ,throttle_duration_sec=0.2)
             return
         
         try:
@@ -68,7 +72,6 @@ class PDMotionPlanner(Node):
         distance = math.sqrt(dx*dx+dy*dy)
         if distance <=0.1:
             self.get_logger().info("Goal Received")
-            self.global_plan.poses.clear()
             return
         self.next_pose_pub.publish(next_pose)
         robot_tf = self.get_tf_from_pose(robot_pose)
@@ -133,7 +136,7 @@ class PDMotionPlanner(Node):
             transformed_pose = concatenate_matrices(transform_matrix,pose_matrix)
             [pose.pose.orientation.x, pose.pose.orientation.y,
              pose.pose.orientation.z, pose.pose.orientation.w] = quaternion_from_matrix(transformed_pose)
-            [pose.pose.position.x,pose.pose.position.y] = translation_from_matrix(transformed_pose)
+            [pose.pose.position.x,pose.pose.position.y,_] = translation_from_matrix(transformed_pose)
             pose.header.frame_id = frame
 
         self.global_plan.header.frame_id = frame

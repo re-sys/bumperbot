@@ -18,7 +18,7 @@ class GraphNode:
         self.heuristic = heuristic
 
     def __lt__(self,other):
-        return (self.cost+self.heuristic) < (other.cost + self.heuristic)
+        return (self.cost+self.heuristic) < (other.cost + other.heuristic)
     
     def __eq__(self, other):
         return self.x==other.x and self.y ==other.y
@@ -61,12 +61,15 @@ class DijkstraPlanner(Node):
             self.get_logger.error("No Map received")
             return
         self.visited_map_.data = [-1]*(self.map_.info.height*self.map_.info.width)
-
-        try:
-            map_to_base_tf = self.tf_buffer.lookup_transform(self.map_.header.frame_id,"base_footprint",rclpy.time.Time())
-        except LookupError:
-            self.get_logger().error("could not transform from map to base_footprint")
-            return
+        self.flag=5
+        while self.flag:
+            try:
+                map_to_base_tf = self.tf_buffer.lookup_transform(self.map_.header.frame_id,"base_footprint",rclpy.time.Time())
+                self.flag=0
+            except LookupError:
+                self.get_logger().warn("could not transform from map to base_footprint")
+                self.flag-=1
+                return
         
         map_to_base_pose = Pose()
         map_to_base_pose.position.x = map_to_base_tf.transform.translation.x
@@ -101,7 +104,7 @@ class DijkstraPlanner(Node):
             for dir_x, dir_y in explore_directions:
                 new_node: GraphNode = active_node + (dir_x,dir_y)
                 if new_node not in visited_nodes and self.pose_on_map(new_node) and self.map_.data[self.pose_to_cell(new_node)]==0:
-                    new_node.cost = active_node.cost +1
+                    new_node.cost = active_node.cost + 1
                     new_node.heuristic = self.manhattan_distance(new_node,goal_node)
                     new_node.prev = active_node
                     pending_nodes.put(new_node)
@@ -115,7 +118,7 @@ class DijkstraPlanner(Node):
             last_pose: Pose = self.grid_to_world(active_node)
             last_pose_stamped = PoseStamped()
             last_pose_stamped.header.frame_id = self.map_.header.frame_id
-            last_pose.pose = last_pose
+            last_pose_stamped.pose = last_pose
             path.poses.append(last_pose_stamped)
             active_node = active_node.prev
 
@@ -124,8 +127,8 @@ class DijkstraPlanner(Node):
 
     def grid_to_world(self,node:GraphNode)->Pose:
         pose = Pose()
-        pose.position.x = node.x*self.map_.info.resolution+self.map_.info.origin.x
-        pose.position.y = node.y*self.map_.info.resolution+self.map_.info.origin.y
+        pose.position.x = node.x*self.map_.info.resolution+self.map_.info.origin.position.x
+        pose.position.y = node.y*self.map_.info.resolution+self.map_.info.origin.position.y
         return pose
 
     def world_to_grid(self,pose: Pose)->GraphNode:

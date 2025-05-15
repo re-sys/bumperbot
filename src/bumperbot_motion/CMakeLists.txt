@@ -16,6 +16,7 @@ find_package(tf2_ros REQUIRED)
 ament_python_install_package(${PROJECT_NAME})
 
 install(PROGRAMS ${PROJECT_NAME}/pd_motion_planner.py
+        ${PROJECT_NAME}/pd_local_planner.py
         DESTINATION lib/${PROJECT_NAME})
 # uncomment the following section in order to fill in
 # further dependencies manually.
