@@ -1,9 +1,9 @@
-bumperbot/build
-bumperbot/devel
-bumperbot/install
-bumperbot/log*
-bumperbot/.vscode
-bumperbot/.catkin_workspace
+build
+devel
+install
+log*
+.vscode
+.catkin_workspace
 .vscode
 **/__pycache__/
 *.pyc
