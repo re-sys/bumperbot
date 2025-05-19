@@ -7,8 +7,8 @@ MAP_WIDTH = 15.0  # 米 (内部可用区域)
 MAP_HEIGHT = 7.0  # 米 (内部可用区域)
 RESOLUTION = 0.05  # 米/像素
 BORDER_WIDTH = 0.2  # 边框宽度(米)
-BASKETBALL_RADIUS = 0.5  # 篮球架半径(米)
-BASKETBALL_POSITION = (5.0, 3.5)  # 篮球架中心位置(米)
+BASKETBALL_RADIUS = 0.25  # 篮球架半径(米)
+BASKETBALL_POSITION = (2.0, 3.5)  # 篮球架中心位置(米)
 EXTENSION = 5.0  # 向外扩展的距离(米)
 
 # 计算总地图尺寸(包括扩展区域)
